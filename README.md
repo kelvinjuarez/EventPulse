@@ -6,8 +6,8 @@ EventPulse es una aplicación móvil desarrollada en Android con Kotlin que perm
 
 ## Integrantes del Proyecto
 
+- Desarrollo de Software para Móviles DSM941 G01T
 - **GJ111587 Kelvin Vladimir García Juárez**
-  - Desarrollo de Software para Móviles DSM941 G01T  
 ---
 
 ## Características Principales
