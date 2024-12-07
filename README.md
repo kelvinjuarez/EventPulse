@@ -52,7 +52,7 @@ EventPulse es una aplicación móvil desarrollada en Android con Kotlin que perm
    - [Trello o Notion](https://trello.com/b/VB6122hF/event-pulse-dsm941)
 
 2. **Diseños Mockups**:
-   - [Link a Mockups](https://link-a-los-mockups.com)
+   - [Link a Mockups](https://drive.google.com/file/d/1utMk1nKA-wjzzgEYNINh4r65bes70XCK/view?usp=sharing)
 
 3. **Licencia**:
    - Este proyecto está licenciado bajo **Creative Commons License**.
