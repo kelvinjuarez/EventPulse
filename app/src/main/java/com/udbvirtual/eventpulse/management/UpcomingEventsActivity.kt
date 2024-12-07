@@ -11,6 +11,9 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -24,31 +27,38 @@ class UpcomingEventsActivity : AppCompatActivity() {
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var recyclerViewUpcomingEvents: RecyclerView
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var auth: FirebaseAuth
+    private lateinit var fabAddEvent: FloatingActionButton
     private val db = FirebaseFirestore.getInstance()
     private val events = mutableListOf<Event>()
-    private lateinit var fabAddEvent: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upcoming_events)
 
+        // Inicializar FirebaseAuth y GoogleSignInClient
+        auth = FirebaseAuth.getInstance()
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
         // Configurar RecyclerView
         recyclerViewUpcomingEvents = findViewById(R.id.recyclerViewUpcomingEvents)
         recyclerViewUpcomingEvents.layoutManager = LinearLayoutManager(this)
 
+        // Configurar botón flotante para agregar eventos
         fabAddEvent = findViewById(R.id.fabAddEvent)
-        // Configurar menú lateral
-        navigationView = findViewById(R.id.navigation_view)
-
-        // Acción para el botón flotante
         fabAddEvent.setOnClickListener {
             val intent = Intent(this, NewEventActivity::class.java)
             startActivity(intent)
         }
 
+        // Configurar menú lateral
+        navigationView = findViewById(R.id.navigation_view)
         setupNavigationMenu()
-        loadEvents()
 
+        // Cargar los eventos próximos
+        loadEvents()
     }
 
     private fun setupNavigationMenu() {
@@ -71,10 +81,7 @@ class UpcomingEventsActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_logout -> {
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    signOut()
                     true
                 }
                 else -> false
@@ -87,7 +94,7 @@ class UpcomingEventsActivity : AppCompatActivity() {
         val userNameTextView = headerView.findViewById<TextView>(R.id.textViewUserName)
         val userEmailTextView = headerView.findViewById<TextView>(R.id.textViewUserEmail)
 
-        val currentUser = FirebaseAuth.getInstance().currentUser
+        val currentUser = auth.currentUser
         if (currentUser != null) {
             userNameTextView.text = currentUser.displayName ?: "Usuario"
             userEmailTextView.text = currentUser.email ?: "Sin correo"
@@ -98,6 +105,39 @@ class UpcomingEventsActivity : AppCompatActivity() {
                 userPhotoImageView.setImageResource(R.drawable.ic_user_placeholder)
             }
         }
+    }
+
+    private fun signOut() {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val providers = currentUser.providerData.map { it.providerId }
+
+            if (providers.contains("google.com")) {
+                // Cierre de sesión para usuarios de Google
+                googleSignInClient.signOut().addOnCompleteListener(this) { googleSignOutTask ->
+                    if (googleSignOutTask.isSuccessful) {
+                        auth.signOut()
+                        Toast.makeText(this, "Sesión cerrada correctamente.", Toast.LENGTH_SHORT).show()
+                        redirectToLogin()
+                    } else {
+                        Toast.makeText(this, "Error al cerrar sesión con Google.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                // Cierre de sesión para usuarios de correo y contraseña
+                auth.signOut()
+                Toast.makeText(this, "Sesión cerrada correctamente.", Toast.LENGTH_SHORT).show()
+                redirectToLogin()
+            }
+        } else {
+            Toast.makeText(this, "No hay usuario autenticado.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun loadEvents() {
