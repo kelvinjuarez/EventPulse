@@ -58,8 +58,7 @@ EventPulse es una aplicación móvil desarrollada en Android con Kotlin que perm
    - Este proyecto está licenciado bajo **Creative Commons License**.
 
 4. **Documentación del Proyecto**:
-   - [Guía de Usuario](ruta-a-guia-de-usuario.pdf)
-   - [Notas de Instalación y Configuración](ruta-a-notas-de-instalacion.pdf)
+   - [Guía de Usuario](Manual de Usuario EventPulse.pdf)
 
 ---
 
